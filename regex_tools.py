@@ -23,6 +23,19 @@ def regex_sequence(ls, steps=["default_cleanup"]):
                 4) (r"[a-z]\1\1+", r"\1\1")  - limit repeating letters to two ('aaaaaannn' -> 'aann')
     Returns:
         Output regexed list, example: ['text*string*one','text*string*two']
+
+    Examples:
+        in_texts = [
+            "The quick brown fox, jumps over the lazy dog.",
+            "AAaaa"]
+        steps = [
+            "lowercase",
+            ", ",
+            (r"([a-z])\1\1+",
+            r"\1\1")]
+        print(regex_sequence(in_texts, steps=steps))
+        >>> 0    the quick brown fox jumps over the lazy dog.
+        >>> 1                                              aa
     """
     if steps == ["default_cleanup"]:
         steps = [
@@ -49,3 +62,25 @@ def regex_sequence(ls, steps=["default_cleanup"]):
             print("Failed to replace ", step, ". Continuing...")
     return ls
 
+
+def regex_around(text, regex_str, letters):
+    """
+    Extract specified number of characters around a specified string
+
+    Args:
+        text: input text.
+        regex_str: regex string identifier.
+        letters: number of letters to be extracted around regex_str.
+
+    Returns:
+        list of extracted items
+
+    Examples:
+        regex_around("The quick brown fox jumps over the lazy dog", "fox", 10)
+        >>> ['ick brown fox jumps ove']
+    """
+    re_span = [i.span() for i in re.finditer(regex_str, text)]
+    out_span = [(i[0]-letters, i[1]+letters) if i[0] > letters
+                else (0, i[1]+letters) for i in re_span]
+    out_re = [text[i[0]:i[1]] for i in out_span]
+    return out_re
